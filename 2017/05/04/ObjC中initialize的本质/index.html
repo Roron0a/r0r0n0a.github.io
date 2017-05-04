@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!--Description-->
+    
+        <meta name="description" content="熟悉ObjC的不会对load和initialize陌生。我们这次就来说下它们的区别
+我们知道 initialize是lazy-loading的 也就是说 除非主动给类发消息，无论是实例方法或者是类方法。 否则initialize是不会调用的
+我们看下initialize的调用栈
+1234567Obj">
+    
+
+    <!--Author-->
+    
+        <meta name="author" content="R0R0N0a">
+    
+
+    <!--Open Graph Title-->
+    
+        <meta property="og:title" content="ObjC中initialize的本质"/>
+    
+
+    <!--Open Graph Description-->
+    
+
+    <!--Open Graph Site Name-->
+    <meta property="og:site_name" content="R0R0N0A&#39;s blog"/>
+
+    <!--Type page-->
+    
+        <meta property="og:type" content="article" />
+    
+
+    <!--Page Cover-->
+    
+
+    <meta name="twitter:card" content="summary" />
+    
+
+    <!-- Title -->
+    
+    <title>ObjC中initialize的本质 - R0R0N0A&#39;s blog</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous">
+
+    <!-- Custom Fonts -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="//oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="//oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Gallery -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/featherlight/1.3.5/featherlight.min.css" type="text/css" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+
+    <!-- Google Analytics -->
+    
+
+
+</head>
+
+
+<body>
+
+<div class="bg-gradient"></div>
+<div class="bg-pattern"></div>
+
+<!-- Menu -->
+<!--Menu Links and Overlay-->
+<div class="menu-bg">
+    <div class="menu-container">
+        <ul>
+            
+            <li class="menu-item">
+                <a href="/">
+                    Home
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="/archives">
+                    Archives
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="/about.html">
+                    About
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="/contact.html">
+                    Contact
+                </a>
+            </li>
+            
+        </ul>
+    </div>
+</div>
+
+<!--Hamburger Icon-->
+<nav>
+    <a href="#menu"></a>
+</nav>
+
+<div class="container">
+
+    <!-- Main Content -->
+    <div class="row">
+    <div class="col-sm-12">
+
+        <!--Title and Logo-->
+        <header>
+    <div class="logo">
+        <a href="/"><i class="logo-icon fa fa-cube" aria-hidden="true"></i></a>
+        
+    </div>
+</header>
+
+        <section class="main">
+            
+<div class="post">
+
+    <div class="post-header">
+        <h1 class="title">
+            <a href="/2017/05/04/ObjC中initialize的本质/">
+                ObjC中initialize的本质
+            </a>
+        </h1>
+        <div class="post-info">
+            
+                <span class="date">2017-05-04</span>
+            
+            
+            
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- Gallery -->
+        
+
+        <!-- Post Content -->
+        <p><strong>熟悉ObjC的不会对<code>load</code>和<code>initialize</code>陌生。我们这次就来说下它们的区别</strong></p>
+<p><strong>我们知道 <code>initialize</code>是<code>lazy-loading</code>的 也就是说 除非主动给类发消息，无论是实例方法或者是类方法。 否则<code>initialize</code>是不会调用的</strong></p>
+<p>我们看下<code>initialize</code>的调用栈</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">Object initialize</div><div class="line">_class initialize</div><div class="line">lookupImpOrForward</div><div class="line">_class_lookupMethodAndLocateCache3</div><div class="line">objc_msgSend</div><div class="line">main</div><div class="line">start</div></pre></td></tr></table></figure>
+<p><strong>从之前的文章我们知道。<code>lookupImpOrForward</code>只会向对象发送消息并且在类的缓存里没有找到对应的<code>SEL</code>才会调用 而且<code>lookupImpOrForward</code>是<code>objc_msgSend</code>的触发器</strong></p>
+<p>我们在这里用<code>lldb</code>打印下 <code>sel</code>看他调用的是什么选择子</p>
+<p>我们看到是 <code>alloc</code>方法</p>
+<p>所以  <code>initialize</code>是在<code>alloc</code>之前调用的 后者导致了前者的执行</p>
+<p><code>if (initialize  &amp;&amp;  !cls-&gt;isInitialized())</code>来看是否初始化过</p>
+<p>接下来我们看下<code>lookupImpOrForward</code>是什么东西<br><strong>通过下面的代码片段 我们知道 runtime会找对应的方法实现，或者进行消息转发，其中如果类没有初始化，则会通过<code>void_class_initialize(Class cls))</code>函数进行初始化</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">IMP lookUpImpOrForward(Class cls, SEL sel, id inst,</div><div class="line">                       bool initialize, bool cache, bool resolver)</div><div class="line">&#123;</div><div class="line">    ...</div><div class="line">        rwlock_unlock_write(&amp;runtimeLock);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    if (initialize  &amp;&amp;  !cls-&gt;isInitialized()) &#123;</div><div class="line">        _class_initialize (_class_getNonMetaClass(cls, inst));</div><div class="line">        // If sel == initialize, _class_initialize will send +initialize and </div><div class="line">        // then the messenger will send +initialize again after this </div><div class="line">        // procedure finishes. Of course, if this is not being called </div><div class="line">        // from the messenger then it won&apos;t happen. 2778172</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    // The lock is held to make method-lookup + cache-fill atomic </div><div class="line">    // with respect to method addition. Otherwise, a category could </div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>其中对父类进行递归调用 确保父类优于子类初始化<br>并且在<br><code>((void(*)(Class,SEL))objc_msgSend)(cls,SEL_initialize);</code><br>使用了runtime的发送消息的方法，对<code>initialize</code>进行了调用。也就是说，<code>initialize</code>和普通方法的调用是一致的，都是<code>objc_msgSend</code>的机制</strong><br>即<br><em>如果子类没有实现<code>initialize</code>方法则调用父类的<code>initialize</code> （注意，此操作会循环调用）
+</em>如果一个类的分类实现了<code>initialize</code>则会覆盖该类的实现</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line">void _class_initialize(Class cls)</div><div class="line">&#123;</div><div class="line">    ...</div><div class="line">    Class supercls;</div><div class="line">    BOOL reallyInitialize = NO;</div><div class="line"></div><div class="line">    // Make sure super is done initializing BEFORE beginning to initialize cls.</div><div class="line">    // See note about deadlock above.</div><div class="line">    supercls = cls-&gt;superclass;</div><div class="line">    if (supercls  &amp;&amp;  !supercls-&gt;isInitialized()) &#123;</div><div class="line">        _class_initialize(supercls);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    // Try to atomically set CLS_INITIALIZING.</div><div class="line">    monitor_enter(&amp;classInitLock);</div><div class="line">    if (!cls-&gt;isInitialized() &amp;&amp; !cls-&gt;isInitializing()) &#123;</div><div class="line">        cls-&gt;setInitializing();</div><div class="line">        reallyInitialize = YES;</div><div class="line">    &#125;</div><div class="line">    monitor_exit(&amp;classInitLock);</div><div class="line"></div><div class="line">    if (reallyInitialize) &#123;</div><div class="line">        // We successfully set the CLS_INITIALIZING bit. Initialize the class.</div><div class="line"></div><div class="line">        // Record that we&apos;re initializing this class so we can message it.</div><div class="line">        _setThisThreadIsInitializingClass(cls);</div><div class="line"></div><div class="line">        // Send the +initialize message.</div><div class="line">        // Note that +initialize is sent to the superclass (again) if </div><div class="line">        // this class doesn&apos;t implement +initialize. 2157218</div><div class="line">        if (PrintInitializing) &#123;</div><div class="line">            _objc_inform(&quot;INITIALIZE: calling +[%s initialize]&quot;,</div><div class="line">                         cls-&gt;nameForLogging());</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        ((void(*)(Class, SEL))objc_msgSend)(cls, SEL_initialize);</div><div class="line"></div><div class="line">        if (PrintInitializing) &#123;</div><div class="line">            _objc_inform(&quot;INITIALIZE: finished +[%s initialize]&quot;,</div></pre></td></tr></table></figure>
+<p>为了避免父类的<code>initialize</code>多次调用 我们用以下代码来操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">+(void)initialize &#123;</div><div class="line">	if(self ==[ClassName self]) &#123;</div><div class="line">		// initialize the class</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p>我们再看以下<code>lookupImpOrForward</code>里的具体实现</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">bool isInitialized() &#123;</div><div class="line">	return getMeta()-&gt;data()-&gt;flags &amp; RW_INITIALIZED;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可见判断初始化的信息保存在<code>class_rw_t</code>结构体里的<code>flags</code><br>数据结构</p>
+<p><strong>上面我们知道 直接发消息的是下面这个C函数</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div></pre></td><td class="code"><pre><div class="line">void _class_initialize(Class cls)</div><div class="line">&#123;</div><div class="line">	Class supercls;</div><div class="line">	BOOL reallyInitialize = NO;</div><div class="line">	</div><div class="line">	supercls = cls-&gt;superclass;// 1 .父类优于子类</div><div class="line">	if(supercls &amp;&amp; !supercls-&gt;isInitialized()) &#123;</div><div class="line">	_class_initialize(supercls);</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">	&#123;</div><div class="line">		monitor_locker_t lock(classInitLock); // 2. 用锁来设置 RW_initialization的标志位</div><div class="line">		if(!cls-&gt;isInitialize() &amp;&amp; !cls-&gt;isInitializing()) &#123;</div><div class="line">		cls-&gt;setInitializing();</div><div class="line">		reallyInitialize = YES;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">	if(reallyInitialize) &#123;</div><div class="line">		_setThisThreadInitializingClass(cls);</div><div class="line">		// 3. 标志位设置成功，则对该类发送`initialize`的消息。像调用其他OC方法一样是`objc_msgSend`</div><div class="line">		((void (*)(Class,SEL))objc_msgSend)(cls,SEL_initialize);</div><div class="line">		</div><div class="line">		</div><div class="line">		</div><div class="line">		monitor_locker_t lock(classinitLock);</div><div class="line">		if(!supercls || supercls-&gt;isInitialized()) &#123;</div><div class="line">			// 4. 如果父类完成了初始化，则设置 RW_INITIALIZED 标志位。记得 一定是`父类优于子类`</div><div class="line">	_finishInitializing(cls,supercls);</div><div class="line">		&#125; else &#123;</div><div class="line">			_finishInitializingAfter(cls,supercls);</div><div class="line">		&#125;</div><div class="line">	&#125; else if (cls-&gt;isInitializing()) &#123;</div><div class="line">		</div><div class="line">		if(_thisThreadIsInitializingClass(cls)) &#123;</div><div class="line">			return;// 5.1 如果当前线程正在初始化当前的类，则直接返回</div><div class="line">		&#125; else &#123; </div><div class="line">		// 5.2 否则 等待其他线程结束 再返回</div><div class="line">			monitor_locker_t lock(classInitLock);</div><div class="line">			while(!cls-&gt;isInitialized()) &#123;</div><div class="line">				classInitLock.wait();</div><div class="line">			&#125;</div><div class="line">			return;</div><div class="line">		&#125;</div><div class="line">	&#125; else if(cls-&gt;isInitialized)) &#123;</div><div class="line">			return; // 6 当前类初始化完成，直接返回</div><div class="line">		&#125;</div><div class="line">	&#125; else &#123;</div><div class="line">		objc_fatal(&quot;thread-safe class init in objc runtime is buggy&quot;);</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我们可以得出结论  <code>_class_initialize</code>是向没有初始化的类 发送 <code>+initialize</code>消息 但是会强制父类先发送<code>+initialize</code>消息 之前的结论 <strong>父类优于子类</strong></p>
+<blockquote>
+<p>那么ObjC是如何确保 父类的调用优于子类 ？</p>
+</blockquote>
+<p><strong>我们引入管理初始化队列这个概念</strong><br>为了保证父类的初始化方法在子类之前调用 我们维护一个  <code>pendingInitializeMap</code>的数据结构 来决定当前类的初始化需要哪个父类先初始化完成</p>
+<p>其中上述代码里的 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">if(!supercls || supercls-&gt;isInitialized()) &#123;</div><div class="line">	_finishInitializing(cls,supercls);</div><div class="line">&#125; else &#123;</div><div class="line">	_finishInitializingAfter(cls,supercls));</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>会改变  <code>PendingInitialzeMap</code>的数据结构 我们看一下这两个方法的实现 首先看<strong>父类没有初始化</strong>时候的操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">static void _finishInitializingAfter(Class cls,Class supercls)</div><div class="line">&#123;</div><div class="line">	PendingInitialize *pending;</div><div class="line">	pending = (PendingIntialize *)malloc(sizeof(*pending));</div><div class="line">	pending-&gt;subclass = cls;</div><div class="line">	pending-&gt;next = (PendingInitialize *)NXMapGet(pendingInitializeMap,supercls);</div><div class="line">	NXMapInsert(pendingInitializeMap,supercls,pending);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>**由于父类没有初始化，所以我们把子类加入到一个<code>PendingInitialize</code>的数据结构里面<br>这个数据结构会以<code>父类</code>为键存储到<code>pendingInitializeMap</code>里面</p>
+<p>再看一下<strong>父类已经初始化</strong>的情况</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">static void _finishIntializing(Class cls,Class supercls)</div><div class="line">&#123;</div><div class="line">	PendingInitialize *pending;</div><div class="line">	cls-&gt;setInitialized(); // 由于已经初始化，我们在这里标记当前类</div><div class="line">	</div><div class="line">	//递归把当前类的block的子类标记为初始化 然而把当前类移除数据结构</div><div class="line">	if(!pendingInitializeMap) return;</div><div class="line">	pending = (PendingInitialize *)NXMapGet(pendingInitializeMap,cls);</div><div class="line">	if(!pending) return;</div><div class="line">	</div><div class="line">	NXMapRemove(pendingInitializeMap,cls);</div><div class="line">	</div><div class="line">	while(pending) &#123;</div><div class="line">		PendingInitialize *next = pending-&gt;next;</div><div class="line">		if(pending-&gt;subclass) _finishInitializing(pending-&gt;subclass,cls);</div><div class="line">		free(pending);</div><div class="line">		pending = next;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>Summary</strong><br>1 <code>initialize</code>只会在第一次调用这个类的方法时候调用<br>2 <code>initialize</code>调用时 <strong>所有的类</strong>都加在到了内存里<br>3 <code>initialize</code> is <strong>thread-safe</strong><br>4 子类会<strong>继承</strong>父类的<code>initialize</code> 所以我们一般会用<code>load</code>来动态添加方法 ，而不是<code>initialize</code>因为后者会造成循环调用。<br>**一般我们用<code>initialize</code>的时候 只是进行一些简单的初始化。</p>
+<blockquote>
+<p>参考</p>
+</blockquote>
+<p>NSObject +load and +initialize - What do they do?<br><a href="http://stackoverflow.com/questions/13326435/nsobject-load-and-initialize-what-do-they-do" target="_blank" rel="external">http://stackoverflow.com/questions/13326435/nsobject-load-and-initialize-what-do-they-do</a><br>懒惰的 initialize 方法<br><a href="http://draveness.me/initialize/" target="_blank" rel="external">http://draveness.me/initialize/</a><br>Objective-C +load vs +initialize<br><a href="http://blog.leichunfeng.com/blog/2015/05/02/objective-c-plus-load-vs-plus-initialize/" target="_blank" rel="external">http://blog.leichunfeng.com/blog/2015/05/02/objective-c-plus-load-vs-plus-initialize/</a></p>
+
+    </div>
+
+    
+
+    
+
+    <!-- Comments -->
+    
+
+</div>
+        </section>
+
+    </div>
+</div>
+
+</div>
+
+<!-- Footer -->
+<div class="push"></div>
+
+<footer class="footer-content">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6 footer-about">
+                <h2>About</h2>
+                <p>
+                    This theme was developed by <a href="https://github.com/klugjo">Jonathan Klughertz</a>. The source code is available on Github. Create Websites. Make Magic.
+                </p>
+            </div>
+            
+    <div class="col-xs-6 col-sm-6 col-md-3 col-lg-3 recent-posts">
+        <h2>Recent Posts</h2>
+        <ul>
+            
+            <li>
+                <a class="footer-post" href="/2017/05/04/ObjC中initialize的本质/">ObjC中initialize的本质</a>
+            </li>
+            
+            <li>
+                <a class="footer-post" href="/2017/05/04/Obj-C中load方法的本质/">Obj-C中load方法的本质</a>
+            </li>
+            
+            <li>
+                <a class="footer-post" href="/2017/05/04/Obj-C中的class-object/">Obj-C中的class_object</a>
+            </li>
+            
+            <li>
+                <a class="footer-post" href="/2017/05/03/Hello/">Hello World</a>
+            </li>
+            
+        </ul>
+    </div>
+
+
+
+            
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <ul class="list-inline footer-social-icons">
+                    
+                    <li class="list-inline-item">
+                        <a href="https://github.com/klugjo/hexo-theme-alpha-dust">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-github"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="https://twitter.com/?lang=en">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-twitter"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="https://www.facebook.com/">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-facebook"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="https://www.instagram.com/">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-instagram"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="https://dribbble.com/">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-dribbble"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="https://plus.google.com/">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-google-plus"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="https://www.behance.net/">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-behance"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="https://500px.com/">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-500px"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="mailto:test@example.com">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-envelope-o"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="\#">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-rss"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <div class="footer-copyright">
+                    @Untitled. All right reserved | Design & Hexo <a href="http://www.codeblocq.com/">Jonathan Klughertz</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- After footer scripts -->
+
+<!-- jQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Tween Max -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/gsap/1.18.5/TweenMax.min.js"></script>
+
+<!-- Gallery -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/featherlight/1.3.5/featherlight.min.js" type="text/javascript" charset="utf-8"></script>
+
+<!-- Custom JavaScript -->
+<script src="/js/main.js"></script>
+
+<!-- Disqus Comments -->
+
+
+
+</body>
+
+</html>
