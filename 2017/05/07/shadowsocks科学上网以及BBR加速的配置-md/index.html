@@ -10,6 +10,12 @@
 
     <!--Description-->
     
+        <meta name="description" content="此篇记录下搭建ss和bbr需要的步骤 仅作备份。
+
+
+安装shadowsocksDibian/Ubuntu12apt-get install python-pippip install shadowsocks
+CentOS12yum install python-setuptools &amp;amp;&amp;a">
+    
 
     <!--Author-->
     
@@ -18,7 +24,7 @@
 
     <!--Open Graph Title-->
     
-        <meta property="og:title" content="R0R0N0A&#39;s blog"/>
+        <meta property="og:title" content="shadowsocks科学上网以及BBR加速的配置.md"/>
     
 
     <!--Open Graph Description-->
@@ -29,7 +35,7 @@
 
     <!--Type page-->
     
-        <meta property="og:type" content="website" />
+        <meta property="og:type" content="article" />
     
 
     <!--Page Cover-->
@@ -40,7 +46,7 @@
 
     <!-- Title -->
     
-    <title>归档：2017 - R0R0N0A&#39;s blog</title>
+    <title>shadowsocks科学上网以及BBR加速的配置.md - R0R0N0A&#39;s blog</title>
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous">
@@ -115,9 +121,7 @@
 <div class="container">
 
     <!-- Main Content -->
-    
-
-<div class="row">
+    <div class="row">
     <div class="col-sm-12">
 
         <!--Title and Logo-->
@@ -125,50 +129,70 @@
     <div class="logo">
         <a href="/"><i class="logo-icon fa fa-cube" aria-hidden="true"></i></a>
         
-            <h1 id="main-title" class="title">2017</h1>
-        
     </div>
 </header>
 
-        <section class="main archive-container">
+        <section class="main">
             
-                <div class="archive-post">
-    <a href="/2017/05/04/Obj-C中的class-object/">
-        <span class="archive-date">
-            May 2017
-        </span>
-        Obj-C中的class_object
-    </a>
+<div class="post">
+
+    <div class="post-header">
+        <h1 class="title">
+            <a href="/2017/05/07/shadowsocks科学上网以及BBR加速的配置-md/">
+                shadowsocks科学上网以及BBR加速的配置.md
+            </a>
+        </h1>
+        <div class="post-info">
+            
+                <span class="date">2017-05-07</span>
+            
+            
+            
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- Gallery -->
+        
+
+        <!-- Post Content -->
+        <blockquote>
+<blockquote>
+<p>   此篇记录下搭建ss和bbr需要的步骤 仅作备份。</p>
+</blockquote>
+</blockquote>
+<h1 id="安装shadowsocks"><a href="#安装shadowsocks" class="headerlink" title="安装shadowsocks"></a>安装shadowsocks</h1><p><em>Dibian/Ubuntu</em><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">apt-get install python-pip</div><div class="line">pip install shadowsocks</div></pre></td></tr></table></figure></p>
+<p><em>CentOS</em><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">yum install python-setuptools &amp;&amp; easy_install pip</div><div class="line">pip install shadowsocks</div></pre></td></tr></table></figure></p>
+<h2 id="编写shadowsocks配置文件"><a href="#编写shadowsocks配置文件" class="headerlink" title="编写shadowsocks配置文件"></a>编写shadowsocks配置文件</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">vi /etc/shadowsocks.json</div></pre></td></tr></table></figure>
+<p>其中里面的密码 端口以及加密方式自己设置<br>如果要多个用户则不同端口设置不同密码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&quot;port_password&quot;: &#123;</div><div class="line">    &quot;port&quot;:&quot;password&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="接着-后台启动或关闭shadowosocks-我个人没有设置supervisord"><a href="#接着-后台启动或关闭shadowosocks-我个人没有设置supervisord" class="headerlink" title="接着 后台启动或关闭shadowosocks 我个人没有设置supervisord"></a>接着 后台启动或关闭shadowosocks 我个人没有设置supervisord</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ssserver -c /etc/shadowsocks.json -d start ssserver -c /etc/shadowsocks.json -d stop</div></pre></td></tr></table></figure>
+<p><strong>BBR锐速</strong><br>系统支持：CentOS 6+，Debian 7+，Ubuntu 12+<br>虚拟技术：OpenVZ 以外的，比如 KVM、Xen、VMware 等<br>内存要求：≥128M</p>
+<p>我自己的linode Japan 2 低配 Ubutun16.04已经成功使用</p>
+<h1 id="root登陆后"><a href="#root登陆后" class="headerlink" title="root登陆后"></a>root登陆后</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">wget --no-check-certificate https://github.com/teddysun/across/raw/master/bbr.sh</div><div class="line">chmod +x bbr.sh</div><div class="line">./bbr.sh</div></pre></td></tr></table></figure>
+<p>安装后按照步骤重启vps 重启后验证是否成功安装内核并开启<code>TCP BBR</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">uname -r</div></pre></td></tr></table></figure></p>
+<p>查看内核版本 如果有4.10就表示安装成功</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sysctl net.ipv4.tcp_available_congestion_control</div></pre></td></tr></table></figure>
+<p>返回值一般是 <code>net.ipv4.tcp_available_congestion_control = bbr cubic reno</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sysctl net.ipv4.tcp_congestion_control</div></pre></td></tr></table></figure>
+<p>返回值一般是 <code>net.ipv4.tcp_congestion_control = bbr</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sysctl net.core.default_qdisc</div></pre></td></tr></table></figure>
+<p>返回值一般是 <code>net.core.default_qdisc = fq</code></p>
+<p>最后<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">lsmod | grep bbr</div></pre></td></tr></table></figure></p>
+<p>如果返回值含有 <code>tcp_bbr</code>则表示<code>BBR</code>已经启动</p>
+
+    </div>
+
+    
+
+    
+
+    <!-- Comments -->
+    
+
 </div>
-            
-                <div class="archive-post">
-    <a href="/2017/05/07/shadowsocks科学上网以及BBR加速的配置-md/">
-        <span class="archive-date">
-            May 2017
-        </span>
-        shadowsocks科学上网以及BBR加速的配置.md
-    </a>
-</div>
-            
-                <div class="archive-post">
-    <a href="/2017/05/04/Obj-C中load方法的本质/">
-        <span class="archive-date">
-            May 2017
-        </span>
-        Obj-C中load方法的本质
-    </a>
-</div>
-            
-                <div class="archive-post">
-    <a href="/2017/05/04/ObjC中initialize的本质/">
-        <span class="archive-date">
-            May 2017
-        </span>
-        ObjC中initialize的本质
-    </a>
-</div>
-            
         </section>
+
     </div>
 </div>
 
