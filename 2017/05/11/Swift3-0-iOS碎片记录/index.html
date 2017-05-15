@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+  <!-- Html Head Tag-->
+  <head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="R0R0N0a">
+  <!-- Open Graph Data -->
+  <meta property="og:title" content="Swift3.0-iOS碎片记录"/>
+  <meta property="og:description" content="" />
+  <meta property="og:site_name" content="R0R0N0A&#39;s blog"/>
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="http://roron0a.github.ioundefined"/>
+  
+    <link rel="alternate" href="/atom.xml" title="R0R0N0A&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+
+  <!-- Site Title -->
+  <title>R0R0N0A's blog</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <!-- Custom CSS -->
+  
+  <link rel="stylesheet" href="/css/style.light.css">
+
+  <!-- Google Analytics -->
+  
+
+</head>
+
+  <body>
+    <!-- Page Header -->
+
+
+<header class="site-header header-background" style="background-image: url(/img/default-banner-dark.jpg)">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="page-title with-background-image">
+          <p class="title">Swift3.0-iOS碎片记录</p>
+          <p class="subtitle"></p>
+        </div>
+        <div class="site-menu with-background-image">
+          <ul>
+            
+              <li>
+                <a href="/">
+                  
+                  Home
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="/archives">
+                  
+                  Archives
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="https://github.com/Roron0a">
+                  
+                  Github
+                  
+                </a>
+              </li>
+            
+              <li>
+                <a href="/piratemrx@gmail.com">
+                  
+                  Email
+                  
+                </a>
+              </li>
+            
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<article>
+  <div class="container typo">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-info text-muted">
+          
+            <!-- Author -->
+            <span class="author info">By R0R0N0a</span>
+          
+          <!-- Date -->
+          <span class="date-time info">On
+            <span class="date">2017-05-11</span>
+            <span class="time">20:55:14</span>
+          </span>
+          
+        </div>
+        <!-- Tags -->
+        
+        <!-- Post Main Content -->
+        <div class="post-content">
+          <p>#Optional</p>
+<p>都说Swift是门<strong>安全性</strong>的语言 那么它的<strong>安全</strong>体现在哪？</p>
+<p>看过文档的我们不会对 <code>!</code> 和 <code>?</code> 陌生</p>
+<p><strong>这就是Swift语言队安全性的检测</strong></p>
+<p>首先我们看他们的定义</p>
+<hr>
+<p>When working with optional values, you can write ? before operations like methods, properties, and subscripting. If the value before the ? is nil, everything after the ? is ignored and the value of the whole expression is nil. Otherwise, the optional value is unwrapped, and everything after the ? acts on the unwrapped value. In both cases, the value of the whole expression is an optional value.</p>
+<p>Once you’re sure that the optional does contain a value, you can access its underlying value by adding an exclamation mark (!) to the end of the optional’s name. The exclamation mark effectively says, “I know that this optional definitely has a value; please use it.” This is known as forced unwrapping of the optional’s value (…)</p>
+<hr>
+<p>说人话就是<br>在<code>optioanal</code>的时候 <strong>当你写下<code>?</code> 如果这个值是<code>nil</code> 那么<code>?</code>之后的语句就被忽略了 整个表达式的值就是<code>nil</code></strong><br>否则<strong>这个值就被<code>unwrapped</code>给解包了 <code>?</code>之后的行为都是根据这个<code>unwrapped</code>值所决定</strong><br>共同点就是 整个表达式的值也是个<code>optioanl value</code></p>
+<p>在<code>force unwrapped</code>的时候<br>**如果你确定这个值是确定存在的 那就写下<code>!</code></p>
+<p>至于<code>optional</code> 我们可以查看<code>API</code>看到<br>其实是一个<code>enum</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">enum Optional&lt;Wrapped&gt; : ExpressibleByNilLiteral</div><div class="line"></div><div class="line">enum Optional&lt;T&gt; &#123;</div><div class="line">    case None</div><div class="line">    case Some(T)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可见 要么是<code>None</code> 要么是<code>T</code><br>当然我们也可以给<code>optional</code>一个默认值<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">var errorCode:String = &apos;404&apos;</div></pre></td></tr></table></figure></p>
+<p>这样 解包<code>errorCode</code>的时候 如果没有值 则会默认给<code>404</code></p>
+<h1 id="guard"><a href="#guard" class="headerlink" title="guard"></a>guard</h1><p>实际项目中 很多的 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">if let optional = optional &#123;</div><div class="line">//some code</div><div class="line">    &#125; else &#123;</div><div class="line">&#125;</div><div class="line">if let optional = optional &#123;</div><div class="line">//some code</div><div class="line">    &#125; else &#123;</div><div class="line">&#125;</div><div class="line">if let optional = optional &#123;</div><div class="line">//some code</div><div class="line">    &#125; else &#123;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>非常繁琐 进而引入了 <code>guard</code><br>常见的就是判断<code>json</code>数据是否有值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">guard let returnValue = response else &#123; return &#125;</div><div class="line">do &#123;</div><div class="line">/// some code here</div><div class="line">&#125; catch &#123;</div><div class="line">/// some code here</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>又或者是判断是否满足条件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">func checkCondition() throws&#123;</div><div class="line">    guard conditionOne else &#123;</div><div class="line">        throw NotMetConditionOne</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    guard conditionTwo else &#123;</div><div class="line">        throw NotMetConditionTwo   </div><div class="line">    &#125;</div><div class="line">//met all condition</div><div class="line">    finalFunction()</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>但如果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">if let some = some</div></pre></td></tr></table></figure></p>
+<p>不是特别多比如就二三个。还是用<code>if let</code>方便</p>
+<p>参考地址 <a href="">https://developer.apple.com/library/content/documentation/Swift/Conceptual/Swift_Programming_Language/BasicOperators.html</a></p>
+<p><a href="">https://en.wikipedia.org/wiki/Option_type</a></p>
+<p><a href="">http://nshipster.com/guard-and-defer/</a></p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</article>
+
+
+
+    <!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <p class="copyright text-muted">
+          Theme By <a target="_blank" href="https://github.com/levblanc">Levblanc.</a>
+          Inspired By <a target="_blank" href="https://github.com/klugjo/hexo-theme-clean-blog">Clean Blog.</a>
+        <p class="copyright text-muted">
+          Powered By <a target="_blank" href="https://hexo.io/">Hexo.</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+    <!-- After Footer Scripts -->
+<script src="/js/highlight.pack.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function(event) {
+    var codeBlocks = Array.prototype.slice.call(document.getElementsByTagName('pre'))
+    codeBlocks.forEach(function(block, index) {
+      hljs.highlightBlock(block);
+    });
+  });
+</script>
+
+  </body>
+</html>
+

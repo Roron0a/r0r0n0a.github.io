@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://roron0a.github.io/"/>
-  <updated>2017-05-07T03:11:50.000Z</updated>
+  <updated>2017-05-15T12:51:54.000Z</updated>
   <id>http://roron0a.github.io/</id>
   
   <author>
@@ -14,6 +14,53 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Swift3.0-iOS碎片记录</title>
+    <link href="http://roron0a.github.io/2017/05/11/Swift3-0-iOS%E7%A2%8E%E7%89%87%E8%AE%B0%E5%BD%95/"/>
+    <id>http://roron0a.github.io/2017/05/11/Swift3-0-iOS碎片记录/</id>
+    <published>2017-05-10T16:52:49.000Z</published>
+    <updated>2017-05-15T12:51:54.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>#Optional</p>
+<p>都说Swift是门<strong>安全性</strong>的语言 那么它的<strong>安全</strong>体现在哪？</p>
+<p>看过文档的我们不会对 <code>!</code> 和 <code>?</code> 陌生</p>
+<p><strong>这就是Swift语言队安全性的检测</strong></p>
+<p>首先我们看他们的定义</p>
+<hr>
+<p>When working with optional values, you can write ? before operations like methods, properties, and subscripting. If the value before the ? is nil, everything after the ? is ignored and the value of the whole expression is nil. Otherwise, the optional value is unwrapped, and everything after the ? acts on the unwrapped value. In both cases, the value of the whole expression is an optional value.</p>
+<p>Once you’re sure that the optional does contain a value, you can access its underlying value by adding an exclamation mark (!) to the end of the optional’s name. The exclamation mark effectively says, “I know that this optional definitely has a value; please use it.” This is known as forced unwrapping of the optional’s value (…)</p>
+<hr>
+<p>说人话就是<br>在<code>optioanal</code>的时候 <strong>当你写下<code>?</code> 如果这个值是<code>nil</code> 那么<code>?</code>之后的语句就被忽略了 整个表达式的值就是<code>nil</code></strong><br>否则<strong>这个值就被<code>unwrapped</code>给解包了 <code>?</code>之后的行为都是根据这个<code>unwrapped</code>值所决定</strong><br>共同点就是 整个表达式的值也是个<code>optioanl value</code></p>
+<p>在<code>force unwrapped</code>的时候<br>**如果你确定这个值是确定存在的 那就写下<code>!</code></p>
+<p>至于<code>optional</code> 我们可以查看<code>API</code>看到<br>其实是一个<code>enum</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">enum Optional&lt;Wrapped&gt; : ExpressibleByNilLiteral</div><div class="line"></div><div class="line">enum Optional&lt;T&gt; &#123;</div><div class="line">    case None</div><div class="line">    case Some(T)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可见 要么是<code>None</code> 要么是<code>T</code><br>当然我们也可以给<code>optional</code>一个默认值<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">var errorCode:String = &apos;404&apos;</div></pre></td></tr></table></figure></p>
+<p>这样 解包<code>errorCode</code>的时候 如果没有值 则会默认给<code>404</code></p>
+<h1 id="guard"><a href="#guard" class="headerlink" title="guard"></a>guard</h1><p>实际项目中 很多的 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">if let optional = optional &#123;</div><div class="line">//some code</div><div class="line">    &#125; else &#123;</div><div class="line">&#125;</div><div class="line">if let optional = optional &#123;</div><div class="line">//some code</div><div class="line">    &#125; else &#123;</div><div class="line">&#125;</div><div class="line">if let optional = optional &#123;</div><div class="line">//some code</div><div class="line">    &#125; else &#123;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>非常繁琐 进而引入了 <code>guard</code><br>常见的就是判断<code>json</code>数据是否有值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">guard let returnValue = response else &#123; return &#125;</div><div class="line">do &#123;</div><div class="line">/// some code here</div><div class="line">&#125; catch &#123;</div><div class="line">/// some code here</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>又或者是判断是否满足条件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">func checkCondition() throws&#123;</div><div class="line">    guard conditionOne else &#123;</div><div class="line">        throw NotMetConditionOne</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    guard conditionTwo else &#123;</div><div class="line">        throw NotMetConditionTwo   </div><div class="line">    &#125;</div><div class="line">//met all condition</div><div class="line">    finalFunction()</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>但如果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">if let some = some</div></pre></td></tr></table></figure></p>
+<p>不是特别多比如就二三个。还是用<code>if let</code>方便</p>
+<p>参考地址 <a href="">https://developer.apple.com/library/content/documentation/Swift/Conceptual/Swift_Programming_Language/BasicOperators.html</a></p>
+<p><a href="">https://en.wikipedia.org/wiki/Option_type</a></p>
+<p><a href="">http://nshipster.com/guard-and-defer/</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;#Optional&lt;/p&gt;
+&lt;p&gt;都说Swift是门&lt;strong&gt;安全性&lt;/strong&gt;的语言 那么它的&lt;strong&gt;安全&lt;/strong&gt;体现在哪？&lt;/p&gt;
+&lt;p&gt;看过文档的我们不会对 &lt;code&gt;!&lt;/code&gt; 和 &lt;code&gt;?&lt;/code&gt; 陌生&lt;/p&gt;
+&lt;
+    
+    </summary>
+    
+    
+  </entry>
   
   <entry>
     <title>shadowsocks科学上网以及BBR加速的配置.md</title>
