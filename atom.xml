@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://roron0a.github.io/"/>
-  <updated>2017-05-15T13:08:46.000Z</updated>
+  <updated>2017-05-15T17:58:31.000Z</updated>
   <id>http://roron0a.github.io/</id>
   
   <author>
@@ -14,6 +14,62 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>iptables的另类用法</title>
+    <link href="http://roron0a.github.io/2017/05/16/iptables%E7%9A%84%E5%8F%A6%E7%B1%BB%E7%94%A8%E6%B3%95/"/>
+    <id>http://roron0a.github.io/2017/05/16/iptables的另类用法/</id>
+    <published>2017-05-15T17:46:08.000Z</published>
+    <updated>2017-05-15T17:58:31.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>#引言</p>
+<blockquote>
+<p>iptables是用来设置、维护和检查Linux内核的IP包过滤规则的，iptables可以定义不同的表，每个表都包含几个内部的链，也能包含用户定义的链。<br>hashlimit是iptables的一个匹配模块，用它结合iptables的其它命令可以实现限速的功能(注意，单独hashlimit模块是无法限速的)。</p>
+</blockquote>
+<p>首先要知道。这只是个匹配模块<br>如果你用过Surge就知道 这只是一些个规则 符合我们就执行 不符合pass<br>就是基本原理是<strong>匹配–处理</strong><br><code>hashlimit</code>在这个工作过程中只能起到匹配的作用，它本身是<strong>无法对网络数据包进行任何处理的</strong>。</p>
+<p>#实例<br><strong>两个步骤:</strong></p>
+<ul>
+<li><p>对符合hashlimit匹配规则包放行</p>
+</li>
+<li><p>丢弃/拒绝未放行的包</p>
+</li>
+</ul>
+<p>下面是一个简单的例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">iptables -A INPUT -p tcp --dport 22 -m hashlimit </div><div class="line">--hashlimit-name ssh                    </div><div class="line">--hashlimit 5/sec </div><div class="line">--hashlimit-burst 10 </div><div class="line">--hashlimit-mode srcip </div><div class="line">--hashlimit-htable-expire 90000 -j ACCEPT   </div><div class="line">iptables -A INPUT -p tcp --dport 22 -j DROP</div></pre></td></tr></table></figure>
+<p>#然后，我们来着重讲讲hashlimit模块具体是如何工作的。</p>
+<p><code>hashlimit</code>的匹配是基于令牌桶 <code>(Token bucket)</code>模型的。令牌桶是一种网络通讯中常见的缓冲区工作原理，它有两个重要的参数，令牌桶容量n和令牌产生速率s。我们可以把令牌当成是门票，而令牌桶则是负责制作和发放门票的管理员，它手里最多有n张令牌。</p>
+<p>一开始，管理员开始手里有n张令牌。每当一个数据包到达后，管理员就看看手里是否还有可用的令牌。如果有，就把令牌发给这个数据包，<code>hashlimit</code>就告诉<code>iptables</code>，这个数据包被匹配了。而当管理员把手上所有的令牌都发完了，再来的数据包就拿不到令牌了。这时，<code>hashlimit</code>模块就告诉<code>iptables</code>，这个数据包不能被匹配。除了发放令牌之外，只要令牌桶中的令牌数量少于n，它就会以速率s来产生新的令牌，直到令牌数量到达n为止。通过令牌桶机制，即可以有效的控制单位时间内通过(匹配)的数据包数量，又可以容许短时间内突发的大量数据包的通过(只要数据包数量不超过令牌桶n)。</p>
+<p><code>hashlimit</code>模块提供了两个参数–<code>hashlimi</code>t和<code>--hashlimit-burst</code>，分别对应于令牌产生速率和令牌桶容量。除了令牌桶模型外，<code>hashlimit</code>匹配的另外一个重要概念是匹配项。在<code>hashlimit</code>中，每个匹配项拥有一个单独的令牌桶，执行独立的匹配计算。通过<code>hashlimit</code>的–<code>hashlimit-mode</code>参数，你可以指定四种匹配项及其组合，即：srcip(每个源地址IP为一个匹配项)，dstip(每个目的地址IP为一个匹配项)，srcport(每个源端口为一个匹配项)，dstport(每个目的端口为一个匹配项)</p>
+<p>除了前面介绍的三个参数外，hashlimit还有一个必须要用的参数，即–hashlimit-name。 hashlimit会在/proc/net/ipt_hashlimit目录中，为每个调用了hashlimit模块的iptables 命令建立一个文件，其中保存着各匹配项的信息。–hashlimit-name参数即用来指定该文件的文件名。</p>
+<p>好了，以上我们已经介绍了hashlimit的工作原理和相应的参数，下面我们来看几个例子。</p>
+<p>首先是前面的那个例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">iptables -A INPUT -p tcp --dport 22 -m hashlimit </div><div class="line">--hashlimit-name ssh                    </div><div class="line">--hashlimit 5/sec </div><div class="line">--hashlimit-burst 10 </div><div class="line">--hashlimit-mode srcip </div><div class="line">--hashlimit-htable-expire 90000 -j ACCEPT   </div><div class="line">iptables -A INPUT -p tcp --dport 22 -j DROP</div></pre></td></tr></table></figure>
+<p>在了解了hashlimit各参数的含义之后，我们现在就可以知道这两条iptables命令的作用。</p>
+<ol>
+<li><p>为所有访问本机22端口的不同IP建立一个匹配项，匹配项对应的令牌桶容量为10,令牌产生速率为5个每秒。放行通过匹配的数据包。</p>
+</li>
+<li><p>丢弃所有其它访问本机22端口的数据包。</p>
+</li>
+</ol>
+<p>通过这两条命令，我们就实现了限制其它机器对本机22端口(ssh服务)频繁访问的功能.</p>
+<p>再来我们看一个复杂点的限速。假设我们现在在一台NAT网关上，想限制内部网某个网段 192.168.1.2/24对外的访问频率。(这个的主要作用是限制内部中毒主机对外的flood攻击)</p>
+<p>那我们可以这么做：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">iptables -N DEFLOOD   </div><div class="line">iptables -A FORWARD -s 192.168.1.2/24 -m state --state NEW -j DEFLOOD   </div><div class="line">iptables -A DEFLOOD -m hashlimit --hashlimit-name deflood --hashlimit 10/sec --hashlimit-burst 10 --hashlimit-mode srcip -j ACCEPT   </div><div class="line">iptables -P DEFLOOD -j DROP </div><div class="line">``` </div><div class="line"></div><div class="line">* 命令建立了一个自定义的处理链</div><div class="line"></div><div class="line">* 所有来自192.168.1.2/24网段，并且打算新建网络连接的数据包，都进入DEFLOOD链处理</div><div class="line"></div><div class="line">* 在DEFLOOD链中，为每个IP建立一个匹配项，对应令牌桶容量为10,产生速率为10个每秒。放行通过匹配的数据包。</div><div class="line"></div><div class="line">* 在DEFLOOD链中丢弃所有其它的数据包</div><div class="line"></div><div class="line">当然,hashlimit还有一些其他的参数,比如</div></pre></td></tr></table></figure>
+<p>–hashlimit-htable-expire<br>–hashlimit-htable-size<br>–hashlimit-htable-max<br><code>``
+具体可以</code>man iptables`</p>
+<p>#此文仅做备份</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;#引言&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;iptables是用来设置、维护和检查Linux内核的IP包过滤规则的，iptables可以定义不同的表，每个表都包含几个内部的链，也能包含用户定义的链。&lt;br&gt;hashlimit是iptables的一个匹配模块，用它结合ip
+    
+    </summary>
+    
+    
+  </entry>
   
   <entry>
     <title>Swift3.0-iOS碎片记录</title>
