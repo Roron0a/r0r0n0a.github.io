@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://roron0a.github.io/"/>
-  <updated>2017-05-15T17:58:31.000Z</updated>
+  <updated>2017-05-18T03:30:17.000Z</updated>
   <id>http://roron0a.github.io/</id>
   
   <author>
@@ -14,6 +14,90 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Jerkins-Xcode集成自动化部署-AutomaticCI-With-Jerkins</title>
+    <link href="http://roron0a.github.io/2017/05/18/Jerkins-Xcode%E9%9B%86%E6%88%90%E8%87%AA%E5%8A%A8%E5%8C%96%E9%83%A8%E7%BD%B2-AutomaticCI-With-Jerkins/"/>
+    <id>http://roron0a.github.io/2017/05/18/Jerkins-Xcode集成自动化部署-AutomaticCI-With-Jerkins/</id>
+    <published>2017-05-17T17:41:34.000Z</published>
+    <updated>2017-05-18T03:30:17.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>#引言</p>
+<blockquote>
+<p>谁会做重复的没有效率的事情呢？</p>
+</blockquote>
+<p><strong>每次打包然后上传-&gt;本地测试/TF</strong><br>真是受够了 浪费生命无异于自杀。<br>谷歌了下能否自动化 果然有。<br>记录下步骤。仅做备份。</p>
+<p>#什么是CI</p>
+<ul>
+<li>持续集成, 简称CI（continuous integration）。</li>
+<li>CI作为敏捷开发重要的一步，其目的在于让产品快速迭代的同时，尽可能保持高质量。</li>
+<li>CI一种可以增加项目可见性，降低项目失败风险的开发实践。其每一次代码更新，都要通过自动化测试来检测代码和功能的正确性，只有通过自动测试的代码才能进行后续的交付和部署。</li>
+<li>CI 是团队成员间（产研测）更好地协调工作，更好的适应敏捷迭代开发，自动完成减少人工干预，保证每个时间点上团队成员提交的代码都能成功集成的，可以很好的用于对Android/iOS项目的打包。</li>
+</ul>
+<p>#Why CI ?<br><strong>Dont Repeat YOURSELF</strong></p>
+<hr>
+<p>#Jerkins</p>
+<ul>
+<li>安装</li>
+</ul>
+<p><strong>喜闻乐见的<code>homebrew</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">brew install jerkins</div></pre></td></tr></table></figure>
+<p>然后在<code>iTerm2</code>里输入<code>jerkins</code><br>然后本地访问 就可以看到<code>jerkins</code>的主界面</p>
+<ul>
+<li><p>插件<br>管理插件里面 就是安装<code>Xcode</code>和 <code>git</code>以及<code>证书</code> <code>签名</code> <code>FTP</code>等相关的插件</p>
+</li>
+<li><p>创建Job</p>
+</li>
+</ul>
+<p>我创建的是自由风格软件 这其中最主要的就是git的操作以及公钥私钥还有证书了</p>
+<ol>
+<li>不要下载<strong>历史</strong><code>git</code>版本。</li>
+<li>公钥私钥就是<code>~/.ssh</code>里面的了</li>
+<li>路径啥的自己选</li>
+</ol>
+<ul>
+<li>打包</li>
+</ul>
+<p><strong>我个人喜欢用命令行</strong></p>
+<ol>
+<li><p>Clean</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">xcodebuild clean -project ./YourProject.xcodeproj -configuration Release</div></pre></td></tr></table></figure>
+</li>
+<li><p>Archive</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">xcodebuild archive -workspace ./YourProject.xcworkspace -scheme YourProject -archivePath </div><div class="line">YourProject.xcarchive CODE_SIGN_IDENTITY=&quot;YOUR_CODE_SIGN_IDENTITY&quot; </div><div class="line">PROVISIONING_PROFILE=&quot;YOUR_PROVISIONING_PROFILE&quot;</div></pre></td></tr></table></figure>
+</li>
+<li><p>Export</p>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">xcodebuild -exportArchive -archivePath YourProject.xcarchive -exportPath YourProject.ipa </div><div class="line">-exportOptionsPlist exportOptions.plist</div></pre></td></tr></table></figure>
+<ul>
+<li>安装</li>
+</ul>
+<p><strong>我个人还是喜欢命令行。</strong></p>
+<p><code>iOS-Deploy</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">npm i -g ios-deploy</div></pre></td></tr></table></figure>
+<p>然后</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ios-deploy -b yourProject.ipa</div></pre></td></tr></table></figure>
+<h1 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h1><p><code>CODE_SIGN_IDENTITY</code> 即证书 <code>Xcode</code>如果配置好就不用找了 或者  在钥匙串里找</p>
+<p><code>PROVISIONING_PROFILE</code> 注意 这个不要扩展名</p>
+<p><code>exportOptions.plist</code> 这个有格式要求 如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</div><div class="line">&lt;plist version=&quot;1.0&quot;&gt;</div><div class="line">&lt;dict&gt;</div><div class="line">    &lt;key&gt;yourTeamID&lt;/key&gt;</div><div class="line">    &lt;string&gt;Some&lt;/string&gt;</div><div class="line">    &lt;key&gt;method&lt;/key&gt;</div><div class="line">    &lt;string&gt;Some&lt;/string&gt;</div><div class="line">&lt;/dict&gt;</div><div class="line">&lt;/plist&gt;</div></pre></td></tr></table></figure>
+<p><code>cocoapods</code>管理的话 <strong>注意</strong><br><code>pod install --verbose --no-repo-update</code> </p>
+<p>#后记<br>想到什么再补充 </p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;#引言&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;谁会做重复的没有效率的事情呢？&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;每次打包然后上传-&amp;gt;本地测试/TF&lt;/strong&gt;&lt;br&gt;真是受够了 浪费生命无异于自杀。&lt;br&gt;谷歌了下能否自动化 果然有。&lt;
+    
+    </summary>
+    
+    
+  </entry>
   
   <entry>
     <title>iptables的另类用法</title>
